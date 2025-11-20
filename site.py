@@ -3,13 +3,9 @@ import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
 
-st.set_page_config(page_title="경기도 장애인 복지관 프로그램", layout="wide")
-
-st.title("경기도 장애인 복지관 운영 프로그램 🌟")
-st.markdown(
-    "장애인 복지관 프로그램 정보를 확인하고, 교직원 및 학생에게 적합한 프로그램을 추천합니다. "
-    "데이터는 자동 업데이트 됩니다."
-)
+st.set_page_config(page_title="경기도 장애인복지관 운영 프로그램", layout="wide")
+st.title("경기도 장애인복지관 운영 프로그램 🌟")
+st.markdown("장애인복지관에서 운영하는 프로그램 정보를 확인할 수 있습니다. 아래 내용은 자동 업데이트 됩니다.")
 
 # ==========================
 # 1️⃣ API 호출
@@ -35,7 +31,7 @@ except Exception as e:
     st.stop()
 
 # ==========================
-# 3️⃣ 데이터 정리 (요청하신 컬럼만)
+# 3️⃣ 데이터프레임 생성
 # ==========================
 data = []
 for r in rows:
@@ -59,30 +55,13 @@ if df.empty:
 # ==========================
 # 4️⃣ 전체 프로그램 표시
 # ==========================
-st.subheader("📌 전체 프로그램 목록")
+st.subheader("전체 프로그램 목록")
 st.dataframe(df.reset_index(drop=True))
 
 # ==========================
 # 5️⃣ 추천 프로그램 (교직원/학생 참고용)
+# 조건: 구분 == "교육"
 # ==========================
-st.subheader("🌟 추천 프로그램 (교직원/학생 참고용)")
-
-# 조건: 교육, 성인, 이용시간 09~18시, 온라인/교내 가능
-def is_recommend(row):
-    if row["구분"] != "교육":
-        return False
-    if "성인" not in row["이용대상상세조건(연령제한)"]:
-        return False
-    if row["이용시간"]:
-        # 간단히 '09'~'18' 포함 여부 확인
-        hours = [int(h) for h in ''.join(filter(str.isdigit, row["이용시간"]))]
-        if hours and (min(hours) < 9 or max(hours) > 18):
-            return False
-    if "온라인" not in row["프로그램내용"] and "교내" not in row["프로그램내용"]:
-        return False
-    return True
-
-recommend_df = df[df.apply(is_recommend, axis=1)]
-
-st.write(f"총 {len(recommend_df)}개 프로그램이 추천되었습니다.")
-st.dataframe(recommend_df.reset_index(drop=True))
+recommended_df = df[df["구분"] == "교육"]
+st.subheader("추천 프로그램 (교직원/학생 참고용)")
+st.dataframe(recommended_df.reset_index(drop=True))
