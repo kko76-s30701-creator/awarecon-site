@@ -4,7 +4,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 
 st.set_page_config(page_title="경기도 장애인복지관 운영 프로그램", layout="wide")
-st.title("경기도 장애인복지관 운영 프로그램 🌟")
+st.title("가톨릭대학 장애인복지관 프로그램 추천 🌟")
 st.markdown("장애인복지관에서 운영하는 프로그램 정보를 확인할 수 있습니다. 아래 내용은 자동 업데이트 됩니다.")
 
 # ==========================
@@ -59,7 +59,7 @@ st.subheader("전체 프로그램 목록")
 st.dataframe(df.reset_index(drop=True))
 
 # ==========================
-# 5️⃣ 추천 프로그램 (교직원/학생 참고용)
+# 5️⃣ 추천 프로그램 (가톨릭대학교에서 진행할 수 있는 교직원/학생 대상 추천 프로그램)
 # 조건: 구분 == "교육"
 # ==========================
 recommended_df = df[df["구분"] == "교육"]
