@@ -1,52 +1,59 @@
+# site.py
 import streamlit as st
 import requests
-import xml.etree.ElementTree as ET
 import pandas as pd
+import xml.etree.ElementTree as ET
+from urllib.parse import quote
 
-# 1️⃣ API 요청 정보
-api_url = "https://apis.data.go.kr/B552583/awarecon"
+st.set_page_config(page_title="직장 내 인식개선 교육 콘텐츠 현황", layout="wide")
+
+st.title("🏢 직장 내 인식개선 교육 콘텐츠 현황")
+
+# 1️⃣ 사용자 설정
 service_key = "5b4b3917e3b9a6a48763aa2cd0ca266d6ee935d8be01ab9728fb2b77a7f67935"
+service_key_encoded = quote(service_key)  # 인증키 URL 인코딩
 
-params = {
-    "ServiceKey": service_key,
-    "pageNo": "1",
-    "numOfRows": "100"
-}
+page_no = 1
+num_of_rows = 100
+response_type = "xml"
 
-# 2️⃣ API 호출
-response = requests.get(api_url, params=params)
-if response.status_code != 200:
-    st.error("API 요청 실패")
+# 2️⃣ API 요청 URL
+url = f"https://apis.data.go.kr/B552583/awarecon?serviceKey={service_key_encoded}&pageNo={page_no}&numOfRows={num_of_rows}&type={response_type}"
+
+# 3️⃣ API 요청
+try:
+    response = requests.get(url)
+    if response.status_code != 200:
+        st.error(f"⚠️ API 요청 실패: HTTP {response.status_code}")
+        st.stop()
+except Exception as e:
+    st.error(f"⚠️ API 요청 중 오류 발생: {e}")
     st.stop()
 
-# 3️⃣ XML 파싱
-root = ET.fromstring(response.text)
-rows = root.findall(".//row")
-
-# 4️⃣ 데이터프레임 생성
-data = []
-for r in rows:
-    row_dict = {
-        "제목": r.findtext("CONTENT_TITLE", ""),
-        "유형": r.findtext("CONTENT_TYPE", ""),
-        "대상": r.findtext("TARGET_AUDIENCE", ""),
-        "제공기관": r.findtext("CONTENT_PROVIDER", ""),
-        "링크": r.findtext("CONTENT_URL", ""),
-        "설명": r.findtext("CONTENT_DESC", ""),
-        "등록일": r.findtext("CREATE_DATE", "")
-    }
-    data.append(row_dict)
+# 4️⃣ XML 파싱
+try:
+    root = ET.fromstring(response.content)
+    items = root.findall(".//item")
+    data = []
+    for r in items:
+        row_dict = {
+            "교육기관명": r.findtext("INSTT_NM", default=""),
+            "교육명": r.findtext("EDU_NM", default=""),
+            "교육내용": r.findtext("EDU_CN", default=""),
+            "주소": r.findtext("EDU_ADDR", default=""),
+            "담당자": r.findtext("EDU_RPRSNTV_NM", default=""),
+            "연락처": r.findtext("EDU_TELNO", default=""),
+        }
+        data.append(row_dict)
+except Exception as e:
+    st.error(f"⚠️ 데이터 처리 중 오류 발생: {e}")
+    st.stop()
 
 df = pd.DataFrame(data)
 
-# 5️⃣ 데이터 없으면 경고
 if df.empty:
     st.warning("⚠️ API에서 데이터가 없습니다.")
     st.stop()
 
-# 6️⃣ 검색 및 표시
-search_term = st.text_input("제목/대상 검색")
-if search_term:
-    df = df[df["제목"].str.contains(search_term) | df["대상"].str.contains(search_term)]
-
-st.dataframe(df)
+# 5️⃣ 전체 데이터 표시
+st.dataframe(df, use_container_width=True)
