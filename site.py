@@ -12,7 +12,7 @@ st.markdown("장애인복지관 운영 프로그램 정보를 확인할 수 있�
 # 1️⃣ API 호출
 # ==========================
 API_KEY = "c9955392cc82450eb32d33c996ad1a9a"
-URL = f"https://openapi.gg.go.kr/DisablePersonCmwelfctProg?ServiceKey={API_KEY}&Type=xml&pIndex=1&pSize=100"
+URL = f" https://openapi.gg.go.kr/DspsnCmwelfctOpertProg"
 
 try:
     response = requests.get(URL)
