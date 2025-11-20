@@ -1,40 +1,39 @@
 import streamlit as st
-import pandas as pd
 import requests
+import pandas as pd
 import xml.etree.ElementTree as ET
 
-# -----------------------------
-# 1️⃣ API 정보
-# -----------------------------
+st.set_page_config(page_title="경기도 장애인복지관 운영 프로그램", layout="wide")
+
+st.title("경기도 장애인복지관 운영 프로그램 🌟")
+st.markdown("장애인복지관 운영 프로그램 정보를 확인할 수 있으며, 아래 내용은 자동으로 업데이트됩니다.")
+
+# ==========================
+# 1️⃣ API 호출
+# ==========================
 API_KEY = "c9955392cc82450eb32d33c996ad1a9a"
-URL = f"https://openapi.gg.go.kr/DisablePersonProg?KEY={API_KEY}&Type=xml&pIndex=1&pSize=1000"
+URL = f"https://openapi.gg.go.kr/DisablePersonCmwelfctProg?ServiceKey={API_KEY}&Type=xml&pIndex=1&pSize=100"
 
-st.set_page_config(page_title="경기도 장애인복지관 운영 프로그램 현황", layout="wide")
-st.title("경기도 장애인복지관 운영 프로그램 현황")
-
-# -----------------------------
-# 2️⃣ API 요청
-# -----------------------------
 try:
     response = requests.get(URL)
-    response.raise_for_status()  # HTTP 오류가 발생하면 예외 발생
-except requests.exceptions.RequestException as e:
+    response.raise_for_status()
+except Exception as e:
     st.error(f"⚠️ API 요청 실패: {e}")
     st.stop()
 
-# -----------------------------
-# 3️⃣ XML 파싱
-# -----------------------------
+# ==========================
+# 2️⃣ XML 파싱
+# ==========================
 try:
     root = ET.fromstring(response.content)
     rows = root.findall(".//row")
-except ET.ParseError:
-    st.error("⚠️ XML 데이터 파싱 실패")
+except Exception as e:
+    st.error(f"⚠️ XML 파싱 오류: {e}")
     st.stop()
 
-# -----------------------------
-# 4️⃣ 데이터프레임 생성
-# -----------------------------
+# ==========================
+# 3️⃣ 데이터 추출 및 컬럼명 한글화
+# ==========================
 data = []
 for r in rows:
     row_dict = {
@@ -55,7 +54,7 @@ if df.empty:
     st.warning("⚠️ API에서 데이터가 없습니다.")
     st.stop()
 
-# -----------------------------
-# 5️⃣ 데이터 표시
-# -----------------------------
-st.dataframe(df)
+# ==========================
+# 4️⃣ 테이블 표시
+# ==========================
+st.dataframe(df.reset_index(drop=True))
