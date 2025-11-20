@@ -82,6 +82,15 @@ if filter_div:
 st.subheader("✨ 최신 등록 프로그램 5개")
 st.dataframe(filtered_df.head(5).reset_index(drop=True))
 
+-------------------------------
+# 성인용만 필터링
+adult_df = filtered_df[filtered_df["연령제한"].str.contains("성인", na=False)]
+school_df = adult_df[
+    (adult_df["구분"].str.contains("교육|체험|워크숍", na=False)) &
+    (adult_df["이용시간"].str.contains("월|화|수|목|금", na=False))
+]
+
+
 # -----------------------------
 # 7️⃣ 전체 데이터 테이블
 # -----------------------------
