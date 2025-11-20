@@ -1,41 +1,61 @@
 import streamlit as st
 import pandas as pd
+import requests
 import xml.etree.ElementTree as ET
 
-st.set_page_config(page_title="직장 내 인식개선 교육 콘텐츠 현황", layout="wide")
-st.title("한국장애인고용공단 - 직장 내 인식개선 교육 콘텐츠 현황")
+# -----------------------------
+# 1️⃣ API 정보
+# -----------------------------
+API_KEY = "c9955392cc82450eb32d33c996ad1a9a"
+URL = f"https://openapi.gg.go.kr/DisablePersonProg?KEY={API_KEY}&Type=xml&pIndex=1&pSize=1000"
 
-# 🔹 XML 샘플 파일 경로
-XML_FILE = "data/awarecon_sample.xml"
+st.set_page_config(page_title="경기도 장애인복지관 운영 프로그램 현황", layout="wide")
+st.title("경기도 장애인복지관 운영 프로그램 현황")
 
-# 🔹 XML 읽기
+# -----------------------------
+# 2️⃣ API 요청
+# -----------------------------
 try:
-    tree = ET.parse(XML_FILE)
-    root = tree.getroot()
-except Exception as e:
-    st.error(f"⚠️ XML 파일 읽기 실패: {e}")
+    response = requests.get(URL)
+    response.raise_for_status()  # HTTP 오류가 발생하면 예외 발생
+except requests.exceptions.RequestException as e:
+    st.error(f"⚠️ API 요청 실패: {e}")
     st.stop()
 
-# 🔹 데이터 파싱
+# -----------------------------
+# 3️⃣ XML 파싱
+# -----------------------------
+try:
+    root = ET.fromstring(response.content)
+    rows = root.findall(".//row")
+except ET.ParseError:
+    st.error("⚠️ XML 데이터 파싱 실패")
+    st.stop()
+
+# -----------------------------
+# 4️⃣ 데이터프레임 생성
+# -----------------------------
 data = []
-rows = root.findall(".//row")  # XML 구조에 따라 row 경로 수정 가능
 for r in rows:
     row_dict = {
-        "교육 콘텐츠 제목": r.findtext("CONTENT_TITLE", default=""),
-        "콘텐츠 유형": r.findtext("CONTENT_TYPE", default=""),
-        "대상": r.findtext("TARGET_AUDIENCE", default=""),
-        "제공기관": r.findtext("CONTENT_PROVIDER", default=""),
-        "콘텐츠 링크": r.findtext("CONTENT_URL", default=""),
-        "내용 설명": r.findtext("CONTENT_DESC", default=""),
-        "등록일": r.findtext("CREATE_DATE", default="")
+        "이용대상상세조건(장애유형)": r.findtext("USE_TARGET_OBSTCL_TYPE_COND", default=""),
+        "이용대상상세조건(연령제한)": r.findtext("USE_TARGET_AGE_LIMITN_COND", default=""),
+        "이용대상상세조건(기타조건)": r.findtext("USE_TARGET_ETC_COND", default=""),
+        "구분": r.findtext("PROG_DIV_NM", default=""),
+        "상세구분": r.findtext("DETAIL_DIV_NM", default=""),
+        "프로그램명": r.findtext("PROG_TITLE", default=""),
+        "프로그램내용": r.findtext("PROG_CONT", default=""),
+        "이용시간": r.findtext("USE_TM_INFO", default="")
     }
     data.append(row_dict)
 
 df = pd.DataFrame(data)
 
 if df.empty:
-    st.warning("⚠️ XML 데이터가 없습니다.")
+    st.warning("⚠️ API에서 데이터가 없습니다.")
     st.stop()
 
-# 🔹 테이블 출력
-st.dataframe(df, use_container_width=True)
+# -----------------------------
+# 5️⃣ 데이터 표시
+# -----------------------------
+st.dataframe(df)
