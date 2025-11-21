@@ -55,7 +55,8 @@ if df.empty:
 # ==========================
 # 4️⃣ 전체 프로그램 표시
 # ==========================
-st.subheader("전체 프로그램 목록")
+st.subheader("장애인복지관 프로그램 현황(학생 참고용)")
+st.markdown("학교 주변 장애인 복지관에서 진행하는 프로그램 현황을 알려드립니다.")
 st.dataframe(df.reset_index(drop=True))
 
 # ==========================
@@ -64,4 +65,5 @@ st.dataframe(df.reset_index(drop=True))
 # ==========================
 recommended_df = df[df["구분"] == "교육"]
 st.subheader("가톨릭대 프로그램 제안 (교직원 참고용)")
+st.markdown("학교 주변 장애인 복지관에서 진행하는 프로그램들 중 가톨릭대에서 진행할 수 있는 프로그램을 추천드립니다.")
 st.dataframe(recommended_df.reset_index(drop=True))
