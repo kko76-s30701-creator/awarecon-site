@@ -8,17 +8,18 @@ st.title("가톨릭대학 주변 장애인복지관 프로그램 🌟")
 st.markdown("장애인복지관에서 운영하는 프로그램 정보를 확인할 수 있습니다. 프로그램들 중 가톨릭대학교에서 진행할 수 있을만한 프로그램을 추천해드립니다. 📌아래 내용은 자동 업데이트 됩니다.")
 
 # ==========================
-# 1️⃣ API 호출
+# 1️⃣ API 호출 (로딩 표시 추가됨)
 # ==========================
 API_KEY = "c9955392cc82450eb32d33c996ad1a9a"
 URL = f"https://openapi.gg.go.kr/DspsnCmwelfctOpertProg?KEY={API_KEY}&Type=xml&pIndex=1&pSize=1000"
 
-try:
-    response = requests.get(URL)
-    response.raise_for_status()
-except Exception as e:
-    st.error(f"⚠️ API 요청 실패: {e}")
-    st.stop()
+with st.spinner("📡 장애인복지관 프로그램 정보를 불러오는 중입니다..."):
+    try:
+        response = requests.get(URL)
+        response.raise_for_status()
+    except Exception as e:
+        st.error(f"⚠️ API 요청 실패: {e}")
+        st.stop()
 
 # ==========================
 # 2️⃣ XML 파싱
@@ -31,11 +32,13 @@ except Exception as e:
     st.stop()
 
 # ==========================
-# 3️⃣ 데이터프레임 생성
+# 3️⃣ 데이터프레임 생성 (복지관 위치 추가됨)
 # ==========================
 data = []
 for r in rows:
     row_dict = {
+        "기관명": r.findtext("BIZPLC_NM", default=""),
+        "주소": r.findtext("REFINE_ROADNM_ADDR", default=""),
         "이용대상상세조건(장애유형)": r.findtext("USE_TARGET_OBSTCL_TYPE_COND", default=""),
         "이용대상상세조건(연령제한)": r.findtext("USE_TARGET_AGE_LIMITN_COND", default=""),
         "구분": r.findtext("PROG_DIV_NM", default=""),
@@ -60,8 +63,7 @@ st.markdown("학교 주변 장애인 복지관에서 진행하는 프로그램 �
 st.dataframe(df.reset_index(drop=True))
 
 # ==========================
-# 5️⃣ 추천 프로그램 (가톨릭대학교에서 진행할 수 있는 교직원/학생 대상 추천 프로그램)
-# 조건: 구분 == "교육"
+# 5️⃣ 추천 프로그램 (구분 == '교육')
 # ==========================
 recommended_df = df[df["구분"] == "교육"]
 st.subheader("가톨릭대 프로그램 제안 (교직원 참고용)")
