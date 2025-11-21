@@ -8,6 +8,32 @@ st.title("가톨릭대학 주변 장애인복지관 프로그램 🌟")
 st.markdown("장애인복지관에서 운영하는 프로그램 정보를 확인할 수 있습니다. 프로그램들 중 가톨릭대학교에서 진행할 수 있을만한 프로그램을 추천해드립니다. 📌아래 내용은 자동 업데이트 됩니다.")
 
 # ==========================
+# 📌 복지관 홈페이지 매핑
+# ==========================
+homepages = {
+    "양주시장애인종합복지관": "http://www.yjwel.or.kr/",
+    "용인시처인장애인종합복지관": "https://www.heart4u.or.kr/",
+    "호매실장애인종합복지관": "https://hmsrehab.or.kr/",
+    "수원시장애인종합복지관": "https://www.suwonrehab.or.kr/",
+    "군포시장애인종합복지관": "https://gunporehab.or.kr/",
+    "시흥시장애인종합복지관": "https://shwcd.org/",
+    "용인시수지장애인복지관": "http://www.sujiable.or.kr/",
+    "김포시장애인복지관": "https://www.gimpowel.or.kr/",
+    "남양주시장애인복지관": "https://nyjwel.or.kr/",
+    "성남시장애인종합복지관": "https://www.rehab21.or.kr/",
+    "과천시장애인복지관": "https://www.happyseed.or.kr/",
+    "오산시하나울복지센터": "https://hanaul.or.kr/",
+    "오산장애인종합복지관": "https://osrc.or.kr/index.php",
+    "희망나래장애인복지관": "https://uwnare.or.kr/main/main.php",
+    "부천시장애인종합복지관": "https://www.pchand.or.kr/",
+    "파주시장애인종합복지관": "http://www.pajurehab.or.kr/",
+    "하남시장애인복지관": "http://www.hanamrehab.or.kr/",
+    "가평군장애인복지관": "http://www.gapyeongjb.or.kr/gboard/html/index.html",
+    "양평군장애인복지관": "https://www.yprehab.or.kr/",
+    "광명장애인종합복지관": "https://withlight.or.kr/"
+}
+
+# ==========================
 # 1️⃣ API 호출
 # ==========================
 API_KEY = "c9955392cc82450eb32d33c996ad1a9a"
@@ -38,6 +64,8 @@ data = []
 for r in rows:
     name = r.findtext("CMWELFCT_NM_INFO", default="")  # 복지관명
 
+    homepage = homepages.get(name, "")  # 매핑된 홈페이지 주소 불러오기
+
     row_dict = {
         "이용대상상세조건(장애유형)": r.findtext("USE_TARGET_OBSTCL_TYPE_COND", default=""),
         "구분": r.findtext("PROG_DIV_NM", default=""),
@@ -47,9 +75,7 @@ for r in rows:
         "복지관명": name,
         "소재지도로명주소": r.findtext("REFINE_ROADNM_ADDR", default=""),
         "데이터기준일자": r.findtext("DATA_STD_DE", default=""),
-        # 🔗 링크 생성 (개별 row 기준)
-        "검색(구글)": f"https://www.google.com/search?q={name}",
-        "네이버지도": f"https://map.naver.com/v5/search/{name}"
+        "홈페이지": homepage
     }
 
     data.append(row_dict)
@@ -60,9 +86,10 @@ if df.empty:
     st.warning("⚠️ API에서 데이터가 없습니다.")
     st.stop()
 
-# 링크 컬럼 Markdown 형식으로 변환
-df["검색(구글)"] = df["검색(구글)"].apply(lambda x: f"[🔗 검색]({x})")
-df["네이버지도"] = df["네이버지도"].apply(lambda x: f"[🗺 지도]({x})")
+# 홈페이지 컬럼을 클릭 가능한 Markdown 링크로 변환
+df["홈페이지"] = df["홈페이지"].apply(
+    lambda x: f"[🌐 바로가기]({x})" if x else ""
+)
 
 # ==========================
 # 4️⃣ 전체 프로그램 표시
@@ -72,7 +99,7 @@ st.markdown("학교 주변 장애인 복지관에서 진행하는 프로그램 �
 st.dataframe(df.reset_index(drop=True))
 
 # ==========================
-# 5️⃣ 추천 프로그램 (가톨릭대학교에서 진행할 수 있는 교직원/학생 대상 추천 프로그램)
+# 5️⃣ 추천 프로그램
 # ==========================
 recommended_df = df[df["구분"] == "교육"]
 st.subheader("가톨릭대 프로그램 제안 (교직원 참고용)")
