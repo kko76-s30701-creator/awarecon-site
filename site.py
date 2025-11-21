@@ -55,6 +55,13 @@ if df.empty:
     st.warning("⚠️ API에서 데이터가 없습니다.")
     st.stop()
 
+"검색(구글)": f"https://www.google.com/search?q={r.findtext('CMWELFCT_NM_INFO', default='')}",
+"네이버지도": f"https://map.naver.com/v5/search/{r.findtext('CMWELFCT_NM_INFO', default='')}",
+
+df["검색(구글)"] = df["검색(구글)"].apply(lambda x: f"[🔗 검색]({x})")
+df["네이버지도"] = df["네이버지도"].apply(lambda x: f"[🗺 지도]({x})")
+
+
 # ==========================
 # 4️⃣ 전체 프로그램 표시
 # ==========================
