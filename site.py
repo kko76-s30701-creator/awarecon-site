@@ -63,5 +63,5 @@ st.dataframe(df.reset_index(drop=True))
 # 조건: 구분 == "교육"
 # ==========================
 recommended_df = df[df["구분"] == "교육"]
-st.subheader("가톨릭대학교 추천 프로그램 (교직원/학생 참고용)")
+st.subheader("가톨릭대 프로그램 제안 (교직원 참고용)")
 st.dataframe(recommended_df.reset_index(drop=True))
