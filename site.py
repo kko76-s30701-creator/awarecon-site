@@ -36,17 +36,22 @@ except Exception as e:
 # ==========================
 data = []
 for r in rows:
+    name = r.findtext("CMWELFCT_NM_INFO", default="")  # 복지관명
+
     row_dict = {
         "이용대상상세조건(장애유형)": r.findtext("USE_TARGET_OBSTCL_TYPE_COND", default=""),
         "구분": r.findtext("PROG_DIV_NM", default=""),
         "상세구분": r.findtext("DETAIL_DIV_NM", default=""),
         "프로그램명": r.findtext("PROG_TITLE", default=""),
         "프로그램내용": r.findtext("PROG_CONT", default=""),
-        # "이용시간": r.findtext("USE_TM_INFO", default=""),   # ← 제거됨
-        "복지관명": r.findtext("CMWELFCT_NM_INFO", default=""),  # ← 추가됨
-        "소재지도로명주소": r.findtext("REFINE_ROADNM_ADDR", default=""),  # ← 추가됨
-        "데이터기준일자": r.findtext("DATA_STD_DE", default="")  # ← 추가됨
+        "복지관명": name,
+        "소재지도로명주소": r.findtext("REFINE_ROADNM_ADDR", default=""),
+        "데이터기준일자": r.findtext("DATA_STD_DE", default=""),
+        # 🔗 링크 생성 (개별 row 기준)
+        "검색(구글)": f"https://www.google.com/search?q={name}",
+        "네이버지도": f"https://map.naver.com/v5/search/{name}"
     }
+
     data.append(row_dict)
 
 df = pd.DataFrame(data)
@@ -55,12 +60,9 @@ if df.empty:
     st.warning("⚠️ API에서 데이터가 없습니다.")
     st.stop()
 
-"검색(구글)": f"https://www.google.com/search?q={r.findtext('CMWELFCT_NM_INFO', default='')}",
-"네이버지도": f"https://map.naver.com/v5/search/{r.findtext('CMWELFCT_NM_INFO', default='')}",
-
+# 링크 컬럼 Markdown 형식으로 변환
 df["검색(구글)"] = df["검색(구글)"].apply(lambda x: f"[🔗 검색]({x})")
 df["네이버지도"] = df["네이버지도"].apply(lambda x: f"[🗺 지도]({x})")
-
 
 # ==========================
 # 4️⃣ 전체 프로그램 표시
@@ -71,7 +73,6 @@ st.dataframe(df.reset_index(drop=True))
 
 # ==========================
 # 5️⃣ 추천 프로그램 (가톨릭대학교에서 진행할 수 있는 교직원/학생 대상 추천 프로그램)
-# 조건: 구분 == "교육"
 # ==========================
 recommended_df = df[df["구분"] == "교육"]
 st.subheader("가톨릭대 프로그램 제안 (교직원 참고용)")
