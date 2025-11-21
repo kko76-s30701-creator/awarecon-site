@@ -38,7 +38,6 @@ data = []
 for r in rows:
     row_dict = {
         "이용대상상세조건(장애유형)": r.findtext("USE_TARGET_OBSTCL_TYPE_COND", default=""),
-        "이용대상상세조건(연령제한)": r.findtext("USE_TARGET_AGE_LIMITN_COND", default=""),
         "구분": r.findtext("PROG_DIV_NM", default=""),
         "상세구분": r.findtext("DETAIL_DIV_NM", default=""),
         "프로그램명": r.findtext("PROG_TITLE", default=""),
